@@ -24,8 +24,10 @@ public class EnglishTypingActivity extends AppCompatActivity {
     private TextView timerText;
     private EditText typingText;
     private long startTime = 0;
-    private long endTime = 0;
+    private long activityStartTime = 0;
     private int typeCount = 0;
+    private CharSequence onTextSequence;
+
     private final String TAG = "EnglishTypingActivity";
 
     @Override
@@ -41,6 +43,10 @@ public class EnglishTypingActivity extends AppCompatActivity {
         showText = findViewById(R.id.preview_text);
         typingText = findViewById(R.id.typing_text);
         timerText = findViewById(R.id.timer);
+        activityStartTime = System.currentTimeMillis();
+        onTextSequence = "   ";
+
+        Log.d(TAG, String.valueOf(activityStartTime));
 
         typingText.setCursorVisible(false);
         typingText.addTextChangedListener(new TextWatcher() {
@@ -48,32 +54,38 @@ public class EnglishTypingActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 showText.setText(charSequence);
+
+
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-                if(charSequence.length() == 0){
+                if(charSequence.length() == 0 || onTextSequence.length() == 0){
                     return;
                 }
+
+                timerText.setText(charSequence + " " + onTextSequence.subSequence(0, onTextSequence.length() - 1));
+
+                if(charSequence.equals(onTextSequence.subSequence(0, onTextSequence.length() - 1))){
+                    return;
+                }
+
+
+
+
 
                 char changedChar = charSequence.charAt(charSequence.length() - 1);
 
                 if(changedChar >= 'a' && changedChar <= 'z' || changedChar >= 'A' && changedChar <= 'Z'){
-                    long tmp;
-                    if(typeCount % 2 == 0){
-                        startTime = System.currentTimeMillis();
-                        tmp = endTime;
-                        endTime = startTime;
-                        startTime = tmp;
-                    }
-                    else
-                        endTime = System.currentTimeMillis();
+                    startTime = System.currentTimeMillis();
 
-                    if(startTime != 0)
-                        timerText.setText(String.valueOf((endTime - startTime)));
+                    double cpm = typeCount / ((double)(startTime - activityStartTime) / 1000 / 60);
+                    //timerText.setText(String.valueOf(((int)cpm)));
                     typeCount++;
                 }
+
+                onTextSequence = charSequence.toString();
             }
 
             @Override
