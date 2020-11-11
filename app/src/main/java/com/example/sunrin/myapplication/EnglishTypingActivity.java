@@ -1,11 +1,17 @@
 package com.example.sunrin.myapplication;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -15,8 +21,10 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.ArrayList;
 
 public class EnglishTypingActivity extends AppCompatActivity {
 
@@ -26,6 +34,8 @@ public class EnglishTypingActivity extends AppCompatActivity {
     private long startTime = 0;
     private long activityStartTime = 0;
     private int typeCount = 0;
+    private boolean isBack = false;
+    private double accuracy = 100;
     private CharSequence onTextSequence;
 
     private final String TAG = "EnglishTypingActivity";
@@ -53,11 +63,10 @@ public class EnglishTypingActivity extends AppCompatActivity {
 
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                showText.setText(charSequence);
-
 
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -65,19 +74,33 @@ public class EnglishTypingActivity extends AppCompatActivity {
                     return;
                 }
 
-                timerText.setText(charSequence + " " + onTextSequence.subSequence(0, onTextSequence.length() - 1));
+                String compareText = onTextSequence.subSequence(0, onTextSequence.length() - 1).toString();
 
-                if(charSequence.equals(onTextSequence.subSequence(0, onTextSequence.length() - 1))){
-                    return;
-                }
+                //textView.setText(charSequence + " " + compareText);
+                //timerText.setText(String.valueOf(compareText.equals(charSequence.toString())));
 
-
-
-
+                if(compareText.equals(charSequence.toString()))
+                    isBack = true;
+                else
+                    isBack = false;
 
                 char changedChar = charSequence.charAt(charSequence.length() - 1);
+                ArrayList<Integer> diffTextIndex = compareTypingText(typingText.getText().toString(), showText.getText().toString());
+                SpannableString spanText = new SpannableString(showText.getText());
 
-                if(changedChar >= 'a' && changedChar <= 'z' || changedChar >= 'A' && changedChar <= 'Z'){
+                if(diffTextIndex.size() > 0){
+                    timerText.setText("different!");
+
+                    for(Integer index : diffTextIndex){
+                        spanText.setSpan(new ForegroundColorSpan(Color.RED), index, index + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+
+                    showText.setText(spanText);
+                }else{
+                    timerText.setText("correct!");
+                }
+
+                if((changedChar >= 'a' && changedChar <= 'z' || changedChar >= 'A' && changedChar <= 'Z') && !isBack){
                     startTime = System.currentTimeMillis();
 
                     double cpm = typeCount / ((double)(startTime - activityStartTime) / 1000 / 60);
@@ -94,28 +117,17 @@ public class EnglishTypingActivity extends AppCompatActivity {
             }
         });
 
-//        typingText.setOnKeyListener(new View.OnKeyListener() {
-//            @Override
-//            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-//                Log.d("EnglishTypingActivity","count : " + String.valueOf(typeCount));
-//
-//                if(i >= KeyEvent.KEYCODE_A && i <= KeyEvent.KEYCODE_Z){
-//                    if(typeCount % 2 == 0)
-//                        startTime = System.currentTimeMillis();
-//                    else
-//                        endTime = System.currentTimeMillis();
-//
-//                    if(startTime != 0 && endTime != 0)
-//                        timerText.setText(String.valueOf((endTime - startTime) / 1000));
-//                    typeCount++;
-//
-//                    return true;
-//                }
-//
-//
-//                return false;
-//            }
-//        });
+
+    }
+
+    public ArrayList<Integer> compareTypingText(String s1, String s2){
+        ArrayList<Integer> index = new ArrayList<>();
+        for(int i = 0; i < s1.length(); i++){
+            if(s1.charAt(i) != s2.charAt(i)){
+                index.add((Integer)i);
+            }
+        }
+        return index;
     }
 
     @Override
