@@ -25,17 +25,21 @@ import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class EnglishTypingActivity extends AppCompatActivity {
 
+    private  android.support.v7.widget.Toolbar toolbar;
     private TextView showText;
     private TextView timerText;
     private EditText typingText;
+    private SpannableString spanText;
     private long startTime = 0;
     private long activityStartTime = 0;
     private int typeCount = 0;
     private boolean isBack = false;
     private double accuracy = 100;
+    private HashMap<Integer, ForegroundColorSpan> textColorMap = new HashMap<>();
     private CharSequence onTextSequence;
 
     private final String TAG = "EnglishTypingActivity";
@@ -45,7 +49,7 @@ public class EnglishTypingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_english_typing);
 
-        Toolbar toolbar = findViewById(R.id.app_toolbar);
+        toolbar = findViewById(R.id.app_toolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -85,20 +89,31 @@ public class EnglishTypingActivity extends AppCompatActivity {
                     isBack = false;
 
                 char changedChar = charSequence.charAt(charSequence.length() - 1);
-                ArrayList<Integer> diffTextIndex = compareTypingText(typingText.getText().toString(), showText.getText().toString());
-                SpannableString spanText = new SpannableString(showText.getText());
+                spanText = new SpannableString(showText.getText());
 
-                if(diffTextIndex.size() > 0){
-                    timerText.setText("different!");
 
-                    for(Integer index : diffTextIndex){
-                        spanText.setSpan(new ForegroundColorSpan(Color.RED), index, index + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    }
+//                if(diffTextIndex.size() > 0){
+//                    timerText.setText("different!");
+//
+//                    for(Integer index : diffTextIndex){
+//                        spanText.setSpan(new ForegroundColorSpan(Color.RED), index, index + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+//                    }
+//
+//                    showText.setText(spanText);
+//                }else{
+//                    timerText.setText("correct!");
+//                }
+                textColorMapping(showText.getText().toString(), charSequence.toString());
 
-                    showText.setText(spanText);
-                }else{
-                    timerText.setText("correct!");
-                }
+//                for(int j = 0; j < spanText.length(); j++){
+//                    if(textColorMap.containsKey(j)){
+//                        timerText.setText("change");
+//
+//                    }else{
+//                        //spanText.removeSpan(textColorMap.get(j));
+//                    }
+//                }
+
 
                 if((changedChar >= 'a' && changedChar <= 'z' || changedChar >= 'A' && changedChar <= 'Z') && !isBack){
                     startTime = System.currentTimeMillis();
@@ -120,14 +135,22 @@ public class EnglishTypingActivity extends AppCompatActivity {
 
     }
 
-    public ArrayList<Integer> compareTypingText(String s1, String s2){
-        ArrayList<Integer> index = new ArrayList<>();
-        for(int i = 0; i < s1.length(); i++){
-            if(s1.charAt(i) != s2.charAt(i)){
-                index.add((Integer)i);
+    public void textColorMapping(String show_text, String type_text){
+        if(type_text.length() == 0 || show_text.length() < type_text.length())
+            return;
+
+        for(int i = 0; i < show_text.length(); i++){
+            if(i > type_text.length() || show_text.charAt(i) == type_text.charAt(i)){
+                spanText.removeSpan(textColorMap.get(i));
+                textColorMap.remove(i);
+                continue;
             }
+            else {
+                textColorMap.put(i, new ForegroundColorSpan(Color.RED));
+                spanText.setSpan(textColorMap.get(i), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            showText.setText(spanText);
         }
-        return index;
     }
 
     @Override
