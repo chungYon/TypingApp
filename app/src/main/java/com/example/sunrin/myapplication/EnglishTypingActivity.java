@@ -21,8 +21,14 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,15 +40,19 @@ public class EnglishTypingActivity extends AppCompatActivity {
     private TextView timerText;
     private EditText typingText;
     private SpannableString spanText;
-    private long startTime = 0;
-    private long activityStartTime = 0;
-    private int typeCount = 0;
+    private CharSequence onTextSequence;
+    private HashMap<Integer, ForegroundColorSpan> textColorMap = new HashMap<>();
+    private ArrayList<String> textList = new ArrayList<>();
+
     private boolean isBack = false;
     private double accuracy = 100;
-    private HashMap<Integer, ForegroundColorSpan> textColorMap = new HashMap<>();
-    private CharSequence onTextSequence;
-
+    private int typeCount = 0;
+    //private final int MAX_TEXT_LENGTH = 6;
+    private long startTime = 0;
+    private long activityStartTime = 0;
     private final String TAG = "EnglishTypingActivity";
+    private BufferedReader br;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +69,28 @@ public class EnglishTypingActivity extends AppCompatActivity {
         timerText = findViewById(R.id.timer);
         activityStartTime = System.currentTimeMillis();
         onTextSequence = "   ";
+        br = null;
+        //csv파일 읽어오는 코드, 확실하지 않으니 테스트
+//        try{
+//            InputStream is = this.getResources().openRawResource(R.raw.english_list);
+//            br = Files.newBufferedReader(Paths.get("res\\values\\english_list.csv"));
+//            String line = "";
+//
+//            while((line = br.readLine()) != null)
+//                textList.add(line.replace(",", ""));
+//        }catch (FileNotFoundException e){
+//            e.printStackTrace();
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }finally{
+//            try{
+//                if(br != null){
+//                    br.close();
+//                }
+//            }catch(IOException e){
+//                e.printStackTrace();
+//            }
+//        }
 
         Log.d(TAG, String.valueOf(activityStartTime));
 
@@ -136,14 +168,14 @@ public class EnglishTypingActivity extends AppCompatActivity {
     }
 
     public void textColorMapping(String show_text, String type_text){
+
         if(type_text.length() == 0 || show_text.length() < type_text.length())
             return;
 
-        for(int i = 0; i < show_text.length(); i++){
-            if(i > type_text.length() || show_text.charAt(i) == type_text.charAt(i)){
+        for(int i = 0; i < type_text.length(); i++){
+            if(show_text.charAt(i) == type_text.charAt(i) && textColorMap.containsKey(i)){
                 spanText.removeSpan(textColorMap.get(i));
                 textColorMap.remove(i);
-                continue;
             }
             else {
                 textColorMap.put(i, new ForegroundColorSpan(Color.RED));
