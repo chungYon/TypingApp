@@ -94,6 +94,8 @@ public class EnglishTypingActivity extends AppCompatActivity {
 
         Log.d(TAG, String.valueOf(activityStartTime));
 
+        spanText = new SpannableString(showText.getText());
+
         typingText.setCursorVisible(false);
         typingText.addTextChangedListener(new TextWatcher() {
 
@@ -111,7 +113,6 @@ public class EnglishTypingActivity extends AppCompatActivity {
                 }
 
                 String compareText = onTextSequence.subSequence(0, onTextSequence.length() - 1).toString();
-
                 //textView.setText(charSequence + " " + compareText);
                 //timerText.setText(String.valueOf(compareText.equals(charSequence.toString())));
 
@@ -121,31 +122,9 @@ public class EnglishTypingActivity extends AppCompatActivity {
                     isBack = false;
 
                 char changedChar = charSequence.charAt(charSequence.length() - 1);
-                spanText = new SpannableString(showText.getText());
 
 
-//                if(diffTextIndex.size() > 0){
-//                    timerText.setText("different!");
-//
-//                    for(Integer index : diffTextIndex){
-//                        spanText.setSpan(new ForegroundColorSpan(Color.RED), index, index + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-//                    }
-//
-//                    showText.setText(spanText);
-//                }else{
-//                    timerText.setText("correct!");
-//                }
                 textColorMapping(showText.getText().toString(), charSequence.toString());
-
-//                for(int j = 0; j < spanText.length(); j++){
-//                    if(textColorMap.containsKey(j)){
-//                        timerText.setText("change");
-//
-//                    }else{
-//                        //spanText.removeSpan(textColorMap.get(j));
-//                    }
-//                }
-
 
                 if((changedChar >= 'a' && changedChar <= 'z' || changedChar >= 'A' && changedChar <= 'Z') && !isBack){
                     startTime = System.currentTimeMillis();
@@ -173,16 +152,32 @@ public class EnglishTypingActivity extends AppCompatActivity {
             return;
 
         for(int i = 0; i < type_text.length(); i++){
-            if(show_text.charAt(i) == type_text.charAt(i) && textColorMap.containsKey(i)){
+
+            if(show_text.charAt(i) == type_text.charAt(i)){
+                if(textColorMap.containsKey(i)) {
+                    spanText.removeSpan(textColorMap.get(i));
+                    textColorMap.remove(i);
+                }
+            }
+            else {
+                if(!textColorMap.containsKey(i)) {
+                    textColorMap.put(i, new ForegroundColorSpan(Color.RED));
+                    spanText.setSpan(textColorMap.get(i), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+            }
+        }
+
+        for(int i = type_text.length(); i < show_text.length() - type_text.length(); i++){
+            if(textColorMap.containsKey(i)) {
                 spanText.removeSpan(textColorMap.get(i));
                 textColorMap.remove(i);
             }
-            else {
-                textColorMap.put(i, new ForegroundColorSpan(Color.RED));
-                spanText.setSpan(textColorMap.get(i), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-            showText.setText(spanText);
         }
+
+        if(spanText.length() > 0)
+            showText.setText(spanText);
+        else
+            showText.setText("chungYon");
     }
 
     @Override
