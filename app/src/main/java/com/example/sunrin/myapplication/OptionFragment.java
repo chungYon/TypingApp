@@ -22,6 +22,9 @@ public class OptionFragment extends Fragment {
     private static final String ARG_PARAM1 = "category";
     private static final String ARG_PARAM2 = "param2";
 
+    private TextView cpmText;
+    private TextView accuracyText;
+
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -69,6 +72,9 @@ public class OptionFragment extends Fragment {
         Button btn_start = rootView.findViewById(R.id.btn_start);
         TextView title = rootView.findViewById(R.id.title);
 
+        cpmText = rootView.findViewById(R.id.cpm);
+        accuracyText = rootView.findViewById(R.id.accuracy);
+
         //title.setText("ENGLISH TYPING");
         title.setText(mParam1.toUpperCase() + " TYPING");
 
@@ -78,7 +84,7 @@ public class OptionFragment extends Fragment {
                 // 액티비티 호출
                 if(mParam1.equals("english")){
                     Intent intent = new Intent(getActivity(), EnglishTypingActivity.class);
-                    startActivity(intent);
+                    startActivityForResult(intent, 1);
                 }
                 else if(mParam1.equals("korean")){
                     Intent intent = new Intent(getActivity(), EnglishTypingActivity.class);
@@ -92,5 +98,18 @@ public class OptionFragment extends Fragment {
         });
         // Inflate the layout for this fragment
         return rootView;
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode == 1){
+            cpmText.setText("cpm: " + data.getStringExtra("cpm"));
+            accuracyText.setText("accuracy: " + data.getStringExtra("accuracy"));
+        }else{
+            cpmText.setText("");
+            accuracyText.setText("");
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

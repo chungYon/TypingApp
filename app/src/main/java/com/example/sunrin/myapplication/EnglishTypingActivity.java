@@ -2,6 +2,7 @@ package com.example.sunrin.myapplication;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
@@ -37,16 +38,20 @@ public class EnglishTypingActivity extends AppCompatActivity {
     private CharSequence onTextSequence;
     private HashMap<Integer, ForegroundColorSpan> textColorMap = new HashMap<>();
     private ArrayList<String> textList = new ArrayList<>();
+    private ArrayList<String> usedTextList = new ArrayList<>();
     private CountDownTimer countDownTimer;
     private boolean isBack = false;
+    private double cpm = 0;
     private double accuracy = 100;
     private int typeCount = 0;
     private int diffWordCount = 0;
     private int sumDiffCount = 0;
+    private int randomIndex = 0;
     private long startTime = 0;
     private long activityStartTime = 0;
     private final int END_MILLI = 30 * 1000;
     private final int INTERVAL = 1000;
+    private final int TEXT_COUNT = 5464;
     private final String TAG = "EnglishTypingActivity";
     private BufferedReader reader;
 
@@ -87,18 +92,24 @@ public class EnglishTypingActivity extends AppCompatActivity {
                   }
               }
         }
-
-        showText.setText(textList.get((int)(Math.random() * 300)));
+        randomIndex = (int)(Math.random() * TEXT_COUNT);
+        showText.setText(textList.get(randomIndex));
+        usedTextList.add(textList.get(randomIndex));
         spanText = new SpannableStringBuilder(showText.getText());
 
         countDownTimer = new CountDownTimer(END_MILLI, INTERVAL) {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onTick(long millisUntilFinished) {
-                timerText.setText(String.valueOf(millisUntilFinished / 1000));
+                timerText.setText(String.valueOf(millisUntilFinished / 1000) + " sec");
             }
 
             @Override
             public void onFinish() {
+                Intent intent = new Intent();
+                intent.putExtra("cpm", String.valueOf(Math.round(cpm * 100) / 100));
+                intent.putExtra("accuracy", String.valueOf(Math.round(accuracy * 100) / 100));
+                setResult(1, intent);
                 finish();
             }
         };
@@ -119,7 +130,11 @@ public class EnglishTypingActivity extends AppCompatActivity {
 
                 if(charSequence.length() > showText.length()){
                     typingText.setText(null);
-                    showText.setText(textList.get((int)(Math.random() * 300)));
+
+                    while(usedTextList.contains(textList.get(randomIndex)))
+                        randomIndex = (int)(Math.random() * TEXT_COUNT);
+                    showText.setText(textList.get(randomIndex));
+                    usedTextList.add(textList.get(randomIndex));
                     spanText.clear();
                     spanText.append(showText.getText().toString());
                     sumDiffCount += diffWordCount;
@@ -148,9 +163,9 @@ public class EnglishTypingActivity extends AppCompatActivity {
                 if(!isBack && changedChar == compareChar){
                     startTime = System.currentTimeMillis();
 
-                    double cpm = typeCount / ((double)(startTime - activityStartTime) / 1000 / 60);
+                    cpm = typeCount / ((double)(startTime - activityStartTime) / 1000 / 60);
 
-                    cpmText.setText(String.valueOf(((int)cpm)));
+                    cpmText.setText("cpm: " + String.valueOf(((int)cpm)));
                 }
                 else if (isBack)
                     typeCount--;
@@ -159,7 +174,7 @@ public class EnglishTypingActivity extends AppCompatActivity {
                     accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) / typeCount);
 
                 typeCount++;
-                accuracyText.setText(String.valueOf(Math.round(accuracy*10) / 10));
+                accuracyText.setText("accuracy: " + String.valueOf(Math.round(accuracy*10) / 10));
                 onTextSequence = charSequence.toString();
             }
 
@@ -219,6 +234,8 @@ public class EnglishTypingActivity extends AppCompatActivity {
             builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
+                    Intent intent = new Intent();
+                    setResult(0, intent);
                     finish();
                 }
             });
