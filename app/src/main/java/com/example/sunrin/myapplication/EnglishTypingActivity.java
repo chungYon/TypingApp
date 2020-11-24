@@ -43,7 +43,7 @@ public class EnglishTypingActivity extends AppCompatActivity {
     private CharSequence onTextSequence;
     private HashMap<Integer, ForegroundColorSpan> textColorMap = new HashMap<>();
     private ArrayList<String> textList = new ArrayList<>();
-
+    private boolean isEqual = true;
     private boolean isBack = false;
     private double accuracy = 100;
     private int typeCount = 0;
@@ -107,14 +107,20 @@ public class EnglishTypingActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                if(charSequence.length() == 0 || onTextSequence.length() == 0){
+                if(charSequence.length() > showText.length())
+                    return;
+                if(charSequence.length() == 0){
+                    for(int j = 0; j < showText.length(); j++){
+                        if(textColorMap.containsKey(j)) {
+                            spanText.removeSpan(textColorMap.get(j));
+                            textColorMap.remove(j);
+                        }
+                    }
+                    showText.setText(spanText);
                     return;
                 }
 
                 String compareText = onTextSequence.subSequence(0, onTextSequence.length() - 1).toString();
-                //textView.setText(charSequence + " " + compareText);
-                //timerText.setText(String.valueOf(compareText.equals(charSequence.toString())));
 
                 if(compareText.equals(charSequence.toString()))
                     isBack = true;
@@ -122,18 +128,16 @@ public class EnglishTypingActivity extends AppCompatActivity {
                     isBack = false;
 
                 char changedChar = charSequence.charAt(charSequence.length() - 1);
-
-
+                char compareChar = showText.getText().toString().charAt(charSequence.length() - 1);
                 textColorMapping(showText.getText().toString(), charSequence.toString());
 
-                if((changedChar >= 'a' && changedChar <= 'z' || changedChar >= 'A' && changedChar <= 'Z') && !isBack){
+                if((changedChar >= 'a' && changedChar <= 'z' || changedChar >= 'A' && changedChar <= 'Z') && !isBack && changedChar == compareChar){
                     startTime = System.currentTimeMillis();
 
                     double cpm = typeCount / ((double)(startTime - activityStartTime) / 1000 / 60);
-                    //timerText.setText(String.valueOf(((int)cpm)));
+                    timerText.setText(String.valueOf(((int)cpm)));
                     typeCount++;
                 }
-
                 onTextSequence = charSequence.toString();
             }
 
@@ -148,7 +152,7 @@ public class EnglishTypingActivity extends AppCompatActivity {
 
     public void textColorMapping(String show_text, String type_text){
 
-        if(type_text.length() == 0 || show_text.length() < type_text.length())
+        if(show_text.length() < type_text.length())
             return;
 
         for(int i = 0; i < type_text.length(); i++){
@@ -162,12 +166,11 @@ public class EnglishTypingActivity extends AppCompatActivity {
             else {
                 if(!textColorMap.containsKey(i)) {
                     textColorMap.put(i, new ForegroundColorSpan(Color.RED));
-                    spanText.setSpan(textColorMap.get(i), i, i + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    spanText.setSpan(textColorMap.get(i), i, i + 1, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
                 }
             }
         }
-
-        for(int i = type_text.length(); i < show_text.length() - type_text.length(); i++){
+        for(int i = type_text.length(); i < show_text.length(); i++){
             if(textColorMap.containsKey(i)) {
                 spanText.removeSpan(textColorMap.get(i));
                 textColorMap.remove(i);
