@@ -1,9 +1,11 @@
 package com.example.sunrin.myapplication;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.hardware.input.InputManager;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +17,7 @@ import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -114,10 +117,21 @@ public class EnglishTypingActivity extends AppCompatActivity {
                 finish();
             }
         };
-        //countDownTimer.start();
+        countDownTimer.start();
 
         typingText.setCursorVisible(false);
         typingText.setClickable(false);
+
+        typingText.post(new Runnable() {
+            @Override
+            public void run() {
+                typingText.setFocusableInTouchMode(true);
+                typingText.requestFocus();
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(typingText,0);
+            }
+        });
+
         typingText.addTextChangedListener(new TextWatcher() {
 
             @Override

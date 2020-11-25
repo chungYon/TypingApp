@@ -37,8 +37,6 @@ public class MainActivity extends AppCompatActivity {
         bundle3.putString("category", "sentence");
         gameFragment.setArguments(bundle3);
 
-
-
         pager.setAdapter(adapter);
     }
 }

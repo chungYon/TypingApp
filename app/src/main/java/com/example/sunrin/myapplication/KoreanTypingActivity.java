@@ -1,6 +1,7 @@
 package com.example.sunrin.myapplication;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,6 +16,7 @@ import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -60,12 +62,7 @@ public class KoreanTypingActivity extends AppCompatActivity {
     private long activityStartTime = 0;
     private final int END_MILLI = 30 * 1000;
     private final int INTERVAL = 1000;
-    private final int TEXT_COUNT = 49775;
-    private final int HAN_START = 0xAC00;
-    private final int HAN_END = 0xD7AF;
-    private final int JUNG_START = 0X1161;
-    private final int JONG_START = 0x11A8;
-    private final String TAG = "EnglishTypingActivity";
+    private final int TEXT_COUNT = 49774;
     private BufferedReader reader;
 
     @Override
@@ -86,6 +83,7 @@ public class KoreanTypingActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        String TAG = "EnglishTypingActivity";
         try{
             InputStreamReader is = new InputStreamReader(getResources().openRawResource(R.raw.korean), "utf-8");
 
@@ -127,10 +125,21 @@ public class KoreanTypingActivity extends AppCompatActivity {
                 finish();
             }
         };
-        //countDownTimer.start();
+        countDownTimer.start();
 
         typingText.setCursorVisible(false);
         typingText.setClickable(false);
+
+        typingText.post(new Runnable() {
+            @Override
+            public void run() {
+                typingText.setFocusableInTouchMode(true);
+                typingText.requestFocus();
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(typingText,0);
+            }
+        });
+
         typingText.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -228,12 +237,16 @@ public class KoreanTypingActivity extends AppCompatActivity {
 
         int inputCount = 1;
 
+        int HAN_END = 0xD7AF;
+        int HAN_START = 0xAC00;
         if(ch >= HAN_START && ch <= HAN_END){
             //int choInt = ((ch - HAN_START) / 21 / 28);
             int jungInt = ((ch - HAN_START) % (21 * 28)) / 28;
             int jongInt = (ch - HAN_START) % 28;
 
+            int JUNG_START = 0X1161;
             inputCount += (count2Phonologies.contains(jungInt + JUNG_START) ? 2 : 1);
+            int JONG_START = 0x11A8;
             if(jongInt > 0)
                 inputCount += (count2Phonologies.contains(jongInt + JONG_START) ? 2 : 1);
         }

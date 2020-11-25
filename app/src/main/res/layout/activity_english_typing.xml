@@ -21,6 +21,7 @@
         android:ems="10"
         android:inputType="textPersonName"
         android:textSize="24sp"
+        android:nextFocusDown="@+id/typing_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

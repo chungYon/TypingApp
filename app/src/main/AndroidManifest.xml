@@ -4,21 +4,22 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_icon"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_icon_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SentenceKoreanTypingActivity"></activity>
-        <activity android:name=".KoreanTypingActivity" />
-        <activity android:name=".EnglishTypingActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".SentenceKoreanTypingActivity" android:windowSoftInputMode="stateVisible" android:theme="@style/AppTheme"/>
+        <activity android:name=".KoreanTypingActivity" android:windowSoftInputMode="stateVisible" android:theme="@style/AppTheme"/>
+        <activity android:name=".EnglishTypingActivity" android:windowSoftInputMode="stateVisible" android:theme="@style/AppTheme"/>
+        <activity android:name=".MainActivity"/>
     </application>
 
 </manifest>
