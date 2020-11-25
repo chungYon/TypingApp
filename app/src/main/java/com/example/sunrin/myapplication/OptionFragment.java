@@ -81,19 +81,17 @@ public class OptionFragment extends Fragment {
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // 액티비티 호출
-                if(mParam1.equals("english")){
-                    Intent intent = new Intent(getActivity(), EnglishTypingActivity.class);
+                // 액티비티 호출]
+                Intent intent = null;
+                if(mParam1.equals("english"))
+                    intent = new Intent(getActivity(), EnglishTypingActivity.class);
+                else if(mParam1.equals("korean"))
+                    intent = new Intent(getActivity(), KoreanTypingActivity.class);
+                else if(mParam1.equals("game"))
+                    intent = new Intent(getActivity(), EnglishTypingActivity.class);
+
+                if(intent != null)
                     startActivityForResult(intent, 1);
-                }
-                else if(mParam1.equals("korean")){
-                    Intent intent = new Intent(getActivity(), EnglishTypingActivity.class);
-                    startActivity(intent);
-                }
-                else if(mParam1.equals("game")){
-                    Intent intent = new Intent(getActivity(), EnglishTypingActivity.class);
-                    startActivity(intent);
-                }
             }
         });
         // Inflate the layout for this fragment
