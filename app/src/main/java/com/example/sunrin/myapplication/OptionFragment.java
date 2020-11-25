@@ -87,8 +87,8 @@ public class OptionFragment extends Fragment {
                     intent = new Intent(getActivity(), EnglishTypingActivity.class);
                 else if(mParam1.equals("korean"))
                     intent = new Intent(getActivity(), KoreanTypingActivity.class);
-                else if(mParam1.equals("game"))
-                    intent = new Intent(getActivity(), EnglishTypingActivity.class);
+                else if(mParam1.equals("sentence"))
+                    intent = new Intent(getActivity(), SentenceKoreanTypingActivity.class);
 
                 if(intent != null)
                     startActivityForResult(intent, 1);

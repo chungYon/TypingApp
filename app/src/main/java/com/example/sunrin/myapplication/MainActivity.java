@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         koreanFragment.setArguments(bundle2);
 
         Bundle bundle3 = new Bundle();
-        bundle3.putString("category", "game");
+        bundle3.putString("category", "sentence");
         gameFragment.setArguments(bundle3);
 
 

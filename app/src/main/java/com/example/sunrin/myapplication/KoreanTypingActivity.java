@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class KoreanTypingActivity extends AppCompatActivity {
@@ -38,24 +39,30 @@ public class KoreanTypingActivity extends AppCompatActivity {
     private SpannableStringBuilder spanText;
     private CharSequence onTextSequence;
     private HashMap<Integer, ForegroundColorSpan> textColorMap = new HashMap<>();
+    private HashMap<Integer, Character> textMap = new HashMap<>();
     private ArrayList<String> textList = new ArrayList<>();
     private ArrayList<String> usedTextList = new ArrayList<>();
+    private ArrayList<Integer> count2Phonologies = new ArrayList<>(Arrays.asList(
+            0x116a, 0x116b, 0x116c, 0x118c, 0x116f, 0x1171, 0x1174, 0x11aa, 0x11ac,
+            0x11ad, 0x11b0, 0x11b1, 0x11b2, 0x11b3, 0x11b5, 0x11b6, 0x11b9)); //2 카운트로 예외 처리할 음운들
+    private ArrayList<Integer> countList = new ArrayList<>();
+    private ArrayList<Integer> correctCountList = new ArrayList<>();
     private CountDownTimer countDownTimer;
     private boolean isBack = false;
     private double cpm = 0;
     private double accuracy = 100;
     private int typeCount = 0;
     private int diffWordCount = 0;
+    private int correctCount = 0;
     private int sumDiffCount = 0;
     private int randomIndex = 0;
     private long startTime = 0;
     private long activityStartTime = 0;
     private final int END_MILLI = 30 * 1000;
     private final int INTERVAL = 1000;
-    private final int TEXT_COUNT = 5464;
+    private final int TEXT_COUNT = 49775;
     private final int HAN_START = 0xAC00;
     private final int HAN_END = 0xD7AF;
-    private final int CHO_START = 0x1100;
     private final int JUNG_START = 0X1161;
     private final int JONG_START = 0x11A8;
     private final String TAG = "EnglishTypingActivity";
@@ -120,7 +127,7 @@ public class KoreanTypingActivity extends AppCompatActivity {
                 finish();
             }
         };
-        countDownTimer.start();
+        //countDownTimer.start();
 
         typingText.setCursorVisible(false);
         typingText.setClickable(false);
@@ -145,6 +152,7 @@ public class KoreanTypingActivity extends AppCompatActivity {
                     spanText.clear();
                     spanText.append(showText.getText().toString());
                     sumDiffCount += diffWordCount;
+                    textMap.clear();
                     return;
                 }
 
@@ -156,6 +164,8 @@ public class KoreanTypingActivity extends AppCompatActivity {
                         }
                     }
                     showText.setText(spanText);
+                    typeCount-=countList.get(countList.size() - 1);
+                    countList.remove(countList.size() - 1);
                     return;
                 }
 
@@ -165,24 +175,46 @@ public class KoreanTypingActivity extends AppCompatActivity {
 
                 char changedChar = charSequence.charAt(charSequence.length() - 1);
                 char compareChar = showText.getText().toString().charAt(charSequence.length() - 1);
+
                 textColorMapping(showText.getText().toString(), charSequence.toString());
 
                 if(!isBack && changedChar == compareChar){
-                    startTime = System.currentTimeMillis();
-
-                    cpm = typeCount / ((double)(startTime - activityStartTime) / 1000 / 60);
-
-                    cpmText.setText("cpm: " + String.valueOf(((int)cpm)));
+                    int chCount = getCharCorrectCount(changedChar);
+                    correctCountList.add(chCount);
+                    correctCount+=chCount;
                 }
-                else if (isBack)
-                    typeCount--;
 
-                if(typeCount > 0)
+                if(isBack){
+                    typeCount -= countList.get(countList.size() - 1);
+                    countList.remove(countList.size() - 1);
+                }else{
+                    if (textMap.containsKey(charSequence.length() - 1)) {
+                        countList.remove(countList.size() - 1);
+                        countList.add(getCharCorrectCount(changedChar));
+                    }else{
+                        int chCount = getCharCorrectCount(changedChar);
+                        typeCount += chCount;
+                        countList.add(chCount);
+                    }
+                    typeCount = 0;
+                    for(int count : countList)
+                        typeCount += count;
+                }
+
+
+                if(typeCount > 0) {
                     accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) / typeCount);
+                    accuracyText.setText("accuracy: " + String.valueOf(Math.round(accuracy*10) / 10));
+                }else{
+                    accuracyText.setText("accuracy: ");
+                }
 
-                typeCount++;
-                accuracyText.setText("accuracy: " + String.valueOf(Math.round(accuracy*10) / 10));
+                startTime = System.currentTimeMillis();
+                cpm = correctCount / ((double)(startTime - activityStartTime) / 1000 / 60);
+                cpmText.setText("cpm: " + String.valueOf(((int)cpm)));
+
                 onTextSequence = charSequence.toString();
+                textMap.put(charSequence.length() - 1, changedChar);
             }
 
             @Override
@@ -192,25 +224,20 @@ public class KoreanTypingActivity extends AppCompatActivity {
         });
     }
 
-    public boolean containHan(char ch, char ch2){
+    public int getCharCorrectCount(char ch){
+
+        int inputCount = 1;
 
         if(ch >= HAN_START && ch <= HAN_END){
-            int choInt = ((ch - HAN_START) / 21 / 28);
-            int jungInt = ((ch - HAN_START) / 28 % 21);
+            //int choInt = ((ch - HAN_START) / 21 / 28);
+            int jungInt = ((ch - HAN_START) % (21 * 28)) / 28;
             int jongInt = (ch - HAN_START) % 28;
 
-            int cho2Int = ((ch2 - HAN_START) / 21 / 28);
-            int jung2Int = ((ch2 - HAN_START) / 28 % 21);
-            int jong2Int = (ch2 - HAN_START) % 28;
-
-            if(cho2Int == 0)
-                return false;
-            if((jung2Int != jungInt) && (jungInt != 0) || (jong2Int != jongInt) && (jongInt != 0) || (cho2Int != cho2Int)){
-                return false;
-            }
+            inputCount += (count2Phonologies.contains(jungInt + JUNG_START) ? 2 : 1);
+            if(jongInt > 0)
+                inputCount += (count2Phonologies.contains(jongInt + JONG_START) ? 2 : 1);
         }
-
-        return true;
+        return inputCount;
     }
 
     public void textColorMapping(String show_text, String type_text){
@@ -236,7 +263,7 @@ public class KoreanTypingActivity extends AppCompatActivity {
                 }
                 textColorMap.put(i, new ForegroundColorSpan(Color.RED));
                 spanText.setSpan(textColorMap.get(i), i, i + 1, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                diffWordCount++;
+                diffWordCount+=getCharCorrectCount(type_text.charAt(i));
             }
         }
         for(int i = type_text.length(); i < show_text.length(); i++){
