@@ -4,20 +4,30 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
+import android.support.constraint.Constraints;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.opencsv.CSVReader;
@@ -36,6 +46,9 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
     private TextView cpmText;
     private TextView timerText;
     private TextView accuracyText;
+    private ProgressBar cpmGauge;
+    private ProgressBar timerGauge;
+    private ProgressBar accuracyGauge;
     private EditText typingText;
     private SpannableStringBuilder spanText;
     private CharSequence onTextSequence;
@@ -77,6 +90,13 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
         cpmText = findViewById(R.id.cpm);
         timerText = findViewById(R.id.timer);
         accuracyText = findViewById(R.id.accuracy);
+        cpmGauge = findViewById(R.id.cpm_gauge);
+        timerGauge = findViewById(R.id.timer_gauge);
+        accuracyGauge = findViewById(R.id.accuracy_gauge);
+        cpmGauge.setVisibility(View.GONE);
+        timerGauge.setVisibility(View.GONE);
+        accuracyGauge.setVisibility(View.GONE);
+
 
         activityStartTime = System.currentTimeMillis();
         onTextSequence = "   ";
@@ -106,9 +126,20 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
                 }
             }
         }
+
         randomIndex = (int)(Math.random() * TEXT_COUNT);
         showText.setText(textList.get(randomIndex));
         usedTextList.add(textList.get(randomIndex));
+
+        ViewGroup.LayoutParams layoutParams = typingText.getLayoutParams();
+        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        typingText.setLayoutParams(layoutParams);
+        ConstraintLayout constraintLayout = findViewById(R.id.constraint_layout);
+        ConstraintSet constraintSet = new ConstraintSet();
+        constraintSet.clone(constraintLayout);
+        constraintSet.connect(R.id.timer, ConstraintSet.BOTTOM, R.id.preview_text, ConstraintSet.TOP, 0);
+        constraintSet.applyTo(constraintLayout);
+
         spanText = new SpannableStringBuilder(showText.getText());
 
         countDownTimer = new CountDownTimer(END_MILLI, INTERVAL) {
@@ -116,9 +147,18 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 timerText.setText(millisUntilFinished / 1000 + " sec");
+                timerGauge.setProgress((int)millisUntilFinished / 1000);
+
                 startTime = System.currentTimeMillis();
                 cpm = correctCount / ((double)(startTime - activityStartTime) / 1000 / 60);
                 cpmText.setText("cpm: " + (int) cpm);
+                cpmGauge.setProgress((int)cpm);
+
+                if(typeCount > 0)
+                    accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) /  (sumCount + typeCount));
+
+                accuracyText.setText("accuracy: " + Math.round(accuracy * 10) / 10);
+                accuracyGauge.setProgress((int)accuracy);
             }
 
             @Override
@@ -134,16 +174,21 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
 
         typingText.setCursorVisible(false);
         typingText.setClickable(false);
+        typingText.setPrivateImeOptions("defaultInputmode=korean;");
 
-        typingText.post(new Runnable() {
+        Handler mHandler = new Handler();
+        mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                System.out.println("dd");
                 typingText.setFocusableInTouchMode(true);
                 typingText.requestFocus();
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(typingText,0);
             }
-        });
+        }, 200);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         typingText.addTextChangedListener(new TextWatcher() {
 
@@ -200,14 +245,6 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
                     int chCount = getCharCorrectCount(ch);
                     typeCount += chCount;
                 }
-
-                if(typeCount > 0) {
-                    accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) /  (sumCount + typeCount));
-                    accuracyText.setText("accuracy: " + Math.round(accuracy * 10) / 10);
-                }else{
-                    accuracyText.setText("accuracy: ");
-                }
-
 
                 onTextSequence = charSequence.toString();
             }
@@ -298,5 +335,30 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("나가시겠습니까?");
+        builder.setMessage("게임은 저장되지 않습니다.");
+
+        builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent();
+                setResult(0, intent);
+                finish();
+            }
+        });
+
+        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+
+        builder.show();
     }
 }

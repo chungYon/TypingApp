@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.opencsv.CSVReader;
@@ -37,6 +38,9 @@ public class KoreanTypingActivity extends AppCompatActivity {
     private TextView timerText;
     private TextView accuracyText;
     private EditText typingText;
+    private ProgressBar cpmGauge;
+    private ProgressBar timerGauge;
+    private ProgressBar accuracyGauge;
     private SpannableStringBuilder spanText;
     private CharSequence onTextSequence;
     private HashMap<Integer, ForegroundColorSpan> textColorMap = new HashMap<>();
@@ -48,7 +52,7 @@ public class KoreanTypingActivity extends AppCompatActivity {
     private CountDownTimer countDownTimer;
     private boolean isBack = false;
     private double cpm = 0;
-    private double accuracy = 100;
+    private double accuracy = 0;
     private int typeCount = 0;
     private int diffWordCount = 0;
     private int correctCount = 0;
@@ -77,6 +81,9 @@ public class KoreanTypingActivity extends AppCompatActivity {
         cpmText = findViewById(R.id.cpm);
         timerText = findViewById(R.id.timer);
         accuracyText = findViewById(R.id.accuracy);
+        cpmGauge = findViewById(R.id.cpm_gauge);
+        timerGauge = findViewById(R.id.timer_gauge);
+        accuracyGauge = findViewById(R.id.accuracy_gauge);
 
         activityStartTime = System.currentTimeMillis();
         onTextSequence = "   ";
@@ -116,9 +123,18 @@ public class KoreanTypingActivity extends AppCompatActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 timerText.setText(millisUntilFinished / 1000 + " sec");
+                timerGauge.setProgress((int)millisUntilFinished / 1000);
+
                 startTime = System.currentTimeMillis();
                 cpm = correctCount / ((double)(startTime - activityStartTime) / 1000 / 60);
                 cpmText.setText("cpm: " + (int) cpm);
+                cpmGauge.setProgress((int)cpm);
+
+                if(typeCount > 0)
+                    accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) /  (sumCount + typeCount));
+
+                accuracyText.setText("accuracy: " + Math.round(accuracy * 10) / 10);
+                accuracyGauge.setProgress((int)accuracy);
             }
 
             @Override
@@ -134,6 +150,7 @@ public class KoreanTypingActivity extends AppCompatActivity {
 
         typingText.setCursorVisible(false);
         typingText.setClickable(false);
+        typingText.setPrivateImeOptions("defaultInputmode=korean;");
 
         typingText.post(new Runnable() {
             @Override
@@ -200,15 +217,6 @@ public class KoreanTypingActivity extends AppCompatActivity {
                     int chCount = getCharCorrectCount(ch);
                     typeCount += chCount;
                 }
-
-                if(typeCount > 0) {
-                    accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) /  (sumCount + typeCount));
-                    accuracyText.setText("accuracy: " + Math.round(accuracy * 10) / 10);
-                }else{
-                    accuracyText.setText("accuracy: ");
-                }
-
-
 
                 onTextSequence = charSequence.toString();
             }
@@ -299,5 +307,30 @@ public class KoreanTypingActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("나가시겠습니까?");
+        builder.setMessage("게임은 저장되지 않습니다.");
+
+        builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent();
+                setResult(0, intent);
+                finish();
+            }
+        });
+
+        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+
+        builder.show();
     }
 }

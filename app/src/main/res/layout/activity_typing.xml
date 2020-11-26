@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraint_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".EnglishTypingActivity">
@@ -34,11 +35,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:imeOptions="flagNoExtractUi"
         android:inputType="textPersonName"
         android:nextFocusDown="@+id/typing_text"
+        android:lineSpacingExtra="2dp"
         android:textColor="#373737"
         android:textSize="24sp"
-        android:imeOptions="flagNoExtractUi"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -50,21 +52,12 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:text="chungYonta"
+        android:lineSpacingExtra="2dp"
         android:textColor="#000000"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/typing_text"
         app:layout_constraintEnd_toEndOf="@+id/typing_text"
         app:layout_constraintStart_toStartOf="@+id/typing_text" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:text="next"
-        app:layout_constraintBottom_toTopOf="@+id/preview_text"
-        app:layout_constraintEnd_toEndOf="@+id/preview_text"
-        app:layout_constraintStart_toStartOf="@+id/preview_text" />
 
     <TextView
         android:id="@+id/cpm"
@@ -80,8 +73,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:layout_marginBottom="80dp"
-        app:layout_constraintBottom_toTopOf="@+id/textView2"
+        android:layout_marginBottom="100dp"
+        app:layout_constraintBottom_toTopOf="@+id/preview_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
@@ -94,4 +87,35 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/timer"
         app:layout_constraintTop_toTopOf="@+id/timer" />
+
+    <ProgressBar
+        android:id="@+id/cpm_gauge"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:max="200"
+        app:layout_constraintEnd_toEndOf="@+id/cpm"
+        app:layout_constraintStart_toStartOf="@+id/cpm"
+        app:layout_constraintTop_toBottomOf="@+id/cpm" />
+
+    <ProgressBar
+        android:id="@+id/timer_gauge"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:max="30"
+        app:layout_constraintEnd_toEndOf="@+id/timer"
+        app:layout_constraintHorizontal_bias="0.52"
+        app:layout_constraintStart_toStartOf="@+id/timer"
+        app:layout_constraintTop_toBottomOf="@+id/timer" />
+
+    <ProgressBar
+        android:id="@+id/accuracy_gauge"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:max="100"
+        app:layout_constraintEnd_toEndOf="@+id/accuracy"
+        app:layout_constraintStart_toStartOf="@+id/accuracy"
+        app:layout_constraintTop_toBottomOf="@+id/accuracy" />
 </android.support.constraint.ConstraintLayout>

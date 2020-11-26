@@ -98,7 +98,7 @@ public class OptionFragment extends Fragment {
         }else{
             logo.setImageResource(R.drawable.korean_type_logo);
             title.setText("한글 문장 타자");
-            btn_start.setText("이 버튼을 눌러 시작합니다.");
+            btn_start.setText("버튼을 눌러 시작합니다.");
         }
 
         btn_start.setOnClickListener(new View.OnClickListener() {
