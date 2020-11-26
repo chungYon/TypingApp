@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
         OptionFragment gameFragment = new OptionFragment();
         adapter.addItem(gameFragment);
 
+        pager.setOffscreenPageLimit(adapter.getCount());
+
         Bundle bundle = new Bundle();
         bundle.putString("category", "english");
         englishFragment.setArguments(bundle);

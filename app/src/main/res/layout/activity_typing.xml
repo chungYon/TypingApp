@@ -10,9 +10,24 @@
         android:id="@+id/app_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@android:color/background_light"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:titleTextColor="@android:color/background_dark">
+
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="@font/jalnan"
+            android:text="TYPING GAME"
+            android:textColor="#000000"
+            android:textSize="24sp"
+            tools:layout_editor_absoluteX="160dp"
+            tools:layout_editor_absoluteY="18dp" />
+
+    </android.support.v7.widget.Toolbar>
 
     <EditText
         android:id="@+id/typing_text"
@@ -20,8 +35,10 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:textSize="24sp"
         android:nextFocusDown="@+id/typing_text"
+        android:textColor="#373737"
+        android:textSize="24sp"
+        android:imeOptions="flagNoExtractUi"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -31,7 +48,9 @@
         android:id="@+id/preview_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
         android:text="chungYonta"
+        android:textColor="#000000"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/typing_text"
         app:layout_constraintEnd_toEndOf="@+id/typing_text"
@@ -41,6 +60,7 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
         android:text="next"
         app:layout_constraintBottom_toTopOf="@+id/preview_text"
         app:layout_constraintEnd_toEndOf="@+id/preview_text"
@@ -50,16 +70,18 @@
         android:id="@+id/cpm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="40dp"
+        app:layout_constraintBottom_toBottomOf="@+id/timer"
+        app:layout_constraintEnd_toStartOf="@+id/timer"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
+        app:layout_constraintTop_toTopOf="@+id/timer" />
 
     <TextView
         android:id="@+id/timer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
+        android:layout_marginBottom="80dp"
+        app:layout_constraintBottom_toTopOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
@@ -68,8 +90,8 @@
         android:id="@+id/accuracy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="40dp"
+        app:layout_constraintBottom_toBottomOf="@+id/timer"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
+        app:layout_constraintStart_toEndOf="@+id/timer"
+        app:layout_constraintTop_toTopOf="@+id/timer" />
 </android.support.constraint.ConstraintLayout>

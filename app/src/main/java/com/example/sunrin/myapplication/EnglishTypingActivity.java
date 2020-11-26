@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.hardware.input.InputManager;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -50,11 +49,12 @@ public class EnglishTypingActivity extends AppCompatActivity {
     private int correctCount = 0;
     private int diffWordCount = 0;
     private int sumDiffCount = 0;
+    private int sumCount = 0;
     private int randomIndex = 0;
     private long startTime = 0;
     private long activityStartTime = 0;
     private final int END_MILLI = 30 * 1000;
-    private final int INTERVAL = 1000;
+    private final int INTERVAL = 100;
     private final int TEXT_COUNT = 5464;
     private final String TAG = "EnglishTypingActivity";
     private BufferedReader reader;
@@ -62,7 +62,7 @@ public class EnglishTypingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_english_typing);
+        setContentView(R.layout.activity_typing);
 
         toolbar = findViewById(R.id.app_toolbar);
         showText = findViewById(R.id.preview_text);
@@ -76,12 +76,13 @@ public class EnglishTypingActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         try{
             InputStreamReader is = new InputStreamReader(getResources().openRawResource(R.raw.english));
             reader = new BufferedReader(is);
             CSVReader read = new CSVReader(reader);
-            String[] line = null;
+            String[] line;
 
             while((line = read.readNext()) != null)
                 textList.add(line[0].split(";")[1]);
@@ -106,6 +107,9 @@ public class EnglishTypingActivity extends AppCompatActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 timerText.setText(String.valueOf(millisUntilFinished / 1000) + " sec");
+                startTime = System.currentTimeMillis();
+                cpm = correctCount / ((double)(startTime - activityStartTime) / 1000 / 60);
+                cpmText.setText("cpm: " + (int) cpm);
             }
 
             @Override
@@ -143,9 +147,7 @@ public class EnglishTypingActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-                if(charSequence.length() > showText.length()){
-                    typingText.setText(null);
-
+                if(typingText.length() > showText.length()){
                     while(usedTextList.contains(textList.get(randomIndex)))
                         randomIndex = (int)(Math.random() * TEXT_COUNT);
                     showText.setText(textList.get(randomIndex));
@@ -153,10 +155,12 @@ public class EnglishTypingActivity extends AppCompatActivity {
                     spanText.clear();
                     spanText.append(showText.getText().toString());
                     sumDiffCount += diffWordCount;
+                    sumCount += typingText.length() - 1;
+                    typingText.setText(null);
                     return;
                 }
 
-                if(charSequence.length() == 0){
+                if(typingText.length() == 0){
                     for(int j = 0; j < showText.length(); j++){
                         if(textColorMap.containsKey(j)) {
                             spanText.removeSpan(textColorMap.get(j));
@@ -164,7 +168,7 @@ public class EnglishTypingActivity extends AppCompatActivity {
                         }
                     }
                     showText.setText(spanText);
-                    typeCount--;
+                    typeCount = 0;
                     return;
                 }
 
@@ -184,15 +188,11 @@ public class EnglishTypingActivity extends AppCompatActivity {
                 typeCount++;
 
                 if(typeCount > 0) {
-                    accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) / typeCount);
-                    accuracyText.setText("accuracy: " + String.valueOf(Math.round(accuracy*10) / 10));
+                    accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) / (typeCount + sumCount));
+                    accuracyText.setText("accuracy: " + Math.round(accuracy * 10) / 10);
                 }else{
                     accuracyText.setText("accuracy: ");
                 }
-
-                startTime = System.currentTimeMillis();
-                cpm = correctCount / ((double)(startTime - activityStartTime) / 1000 / 60);
-                cpmText.setText("cpm: " + String.valueOf(((int)cpm)));
 
                 onTextSequence = charSequence.toString();
             }

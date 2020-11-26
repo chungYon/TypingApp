@@ -1,13 +1,16 @@
 package com.example.sunrin.myapplication;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -71,18 +74,39 @@ public class OptionFragment extends Fragment {
 
         Button btn_start = rootView.findViewById(R.id.btn_start);
         TextView title = rootView.findViewById(R.id.title);
+        ImageView logo = rootView.findViewById(R.id.imageView3);
+
+        SharedPreferences sharedPreferences = this.getActivity().getSharedPreferences("text-result", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+
 
         cpmText = rootView.findViewById(R.id.cpm);
         accuracyText = rootView.findViewById(R.id.accuracy);
 
         //title.setText("ENGLISH TYPING");
-        title.setText(mParam1.toUpperCase() + " TYPING");
+
+        if(mParam1.equals("english")){
+            logo.setImageResource(R.drawable.english_type_logo);
+            title.setText(mParam1.toUpperCase() + " TYPING");
+            btn_start.setText("START");
+        }
+        else if(mParam1.equals("korean")){
+            logo.setImageResource(R.drawable.korean_type_logo);
+            title.setText("한글 타자");
+            btn_start.setText("시작");
+        }else{
+            logo.setImageResource(R.drawable.korean_type_logo);
+            title.setText("한글 문장 타자");
+            btn_start.setText("이 버튼을 눌러 시작합니다.");
+        }
 
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // 액티비티 호출]
                 Intent intent = null;
+
                 if(mParam1.equals("english"))
                     intent = new Intent(getActivity(), EnglishTypingActivity.class);
                 else if(mParam1.equals("korean"))

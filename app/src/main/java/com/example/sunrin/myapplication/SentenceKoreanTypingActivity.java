@@ -25,7 +25,6 @@ import com.opencsv.CSVReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,14 +40,11 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
     private SpannableStringBuilder spanText;
     private CharSequence onTextSequence;
     private HashMap<Integer, ForegroundColorSpan> textColorMap = new HashMap<>();
-    private HashMap<Integer, Character> textMap = new HashMap<>();
     private ArrayList<String> textList = new ArrayList<>();
     private ArrayList<String> usedTextList = new ArrayList<>();
     private ArrayList<Integer> count2Phonologies = new ArrayList<>(Arrays.asList(
             0x116a, 0x116b, 0x116c, 0x118c, 0x116f, 0x1171, 0x1174, 0x11aa, 0x11ac,
             0x11ad, 0x11b0, 0x11b1, 0x11b2, 0x11b3, 0x11b5, 0x11b6, 0x11b9)); //2 카운트로 예외 처리할 음운들
-    private ArrayList<Integer> countList = new ArrayList<>();
-    private ArrayList<Integer> correctCountList = new ArrayList<>();
     private CountDownTimer countDownTimer;
     private boolean isBack = false;
     private double cpm = 0;
@@ -57,23 +53,23 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
     private int diffWordCount = 0;
     private int correctCount = 0;
     private int sumDiffCount = 0;
+    private int sumCount = 0;
     private int randomIndex = 0;
     private long startTime = 0;
     private long activityStartTime = 0;
     private final int END_MILLI = 30 * 1000;
     private final int INTERVAL = 1000;
     private final int TEXT_COUNT = 1269;
-    private final int HAN_START = 0xAC00;
     private final int HAN_END = 0xD7AF;
+    private final int HAN_START = 0xAC00;
     private final int JUNG_START = 0X1161;
     private final int JONG_START = 0x11A8;
-    private final String TAG = "EnglishTypingActivity";
     private BufferedReader reader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_english_typing);
+        setContentView(R.layout.activity_typing);
 
         toolbar = findViewById(R.id.app_toolbar);
         showText = findViewById(R.id.preview_text);
@@ -87,13 +83,15 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        String TAG = "SentenceTypingActivity";
         try{
             InputStreamReader is = new InputStreamReader(getResources().openRawResource(R.raw.korean_sentence), "utf-8");
 
             reader = new BufferedReader(is);
             CSVReader read = new CSVReader(reader);
-            String[] line = null;
+            String[] line;
 
             while((line = read.readNext()) != null)
                 textList.add(line[0]);
@@ -117,7 +115,10 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onTick(long millisUntilFinished) {
-                timerText.setText(String.valueOf(millisUntilFinished / 1000) + " sec");
+                timerText.setText(millisUntilFinished / 1000 + " sec");
+                startTime = System.currentTimeMillis();
+                cpm = correctCount / ((double)(startTime - activityStartTime) / 1000 / 60);
+                cpmText.setText("cpm: " + (int) cpm);
             }
 
             @Override
@@ -165,7 +166,7 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
                     spanText.clear();
                     spanText.append(showText.getText().toString());
                     sumDiffCount += diffWordCount;
-                    textMap.clear();
+                    sumCount+=typeCount;
                     return;
                 }
 
@@ -177,8 +178,6 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
                         }
                     }
                     showText.setText(spanText);
-                    typeCount-=countList.get(countList.size() - 1);
-                    countList.remove(countList.size() - 1);
                     return;
                 }
 
@@ -193,41 +192,24 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
 
                 if(!isBack && changedChar == compareChar){
                     int chCount = getCharCorrectCount(changedChar);
-                    correctCountList.add(chCount);
                     correctCount+=chCount;
                 }
 
-                if(isBack){
-                    typeCount -= countList.get(countList.size() - 1);
-                    countList.remove(countList.size() - 1);
-                }else{
-                    if (textMap.containsKey(charSequence.length() - 1)) {
-                        countList.remove(countList.size() - 1);
-                        countList.add(getCharCorrectCount(changedChar));
-                    }else{
-                        int chCount = getCharCorrectCount(changedChar);
-                        typeCount += chCount;
-                        countList.add(chCount);
-                    }
-                    typeCount = 0;
-                    for(int count : countList)
-                        typeCount += count;
+                typeCount = 0;
+                for(char ch : charSequence.toString().toCharArray()){
+                    int chCount = getCharCorrectCount(ch);
+                    typeCount += chCount;
                 }
 
-
                 if(typeCount > 0) {
-                    accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) / typeCount);
-                    accuracyText.setText("accuracy: " + String.valueOf(Math.round(accuracy*10) / 10));
+                    accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) /  (sumCount + typeCount));
+                    accuracyText.setText("accuracy: " + Math.round(accuracy * 10) / 10);
                 }else{
                     accuracyText.setText("accuracy: ");
                 }
 
-                startTime = System.currentTimeMillis();
-                cpm = correctCount / ((double)(startTime - activityStartTime) / 1000 / 60);
-                cpmText.setText("cpm: " + String.valueOf(((int)cpm)));
 
                 onTextSequence = charSequence.toString();
-                textMap.put(charSequence.length() - 1, changedChar);
             }
 
             @Override
@@ -242,13 +224,12 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
         int inputCount = 1;
 
         if(ch >= HAN_START && ch <= HAN_END){
-            //int choInt = ((ch - HAN_START) / 21 / 28);
             int jungInt = ((ch - HAN_START) % (21 * 28)) / 28;
             int jongInt = (ch - HAN_START) % 28;
 
             inputCount += (count2Phonologies.contains(jungInt + JUNG_START) ? 2 : 1);
             if(jongInt > 0)
-                inputCount += (count2Phonologies.contains(jongInt + JONG_START) ? 2 : 1);
+                inputCount += (count2Phonologies.contains(jongInt + JONG_START - 1) ? 2 : 1);
         }
         return inputCount;
     }
