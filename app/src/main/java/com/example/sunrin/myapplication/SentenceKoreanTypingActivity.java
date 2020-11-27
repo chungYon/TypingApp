@@ -61,7 +61,7 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
     private CountDownTimer countDownTimer;
     private boolean isBack = false;
     private double cpm = 0;
-    private double accuracy = 100;
+    private double accuracy = 0;
     private int typeCount = 0;
     private int diffWordCount = 0;
     private int correctCount = 0;
@@ -71,7 +71,7 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
     private long startTime = 0;
     private long activityStartTime = 0;
     private final int END_MILLI = 30 * 1000;
-    private final int INTERVAL = 1000;
+    private final int INTERVAL = 100;
     private final int TEXT_COUNT = 1269;
     private final int HAN_END = 0xD7AF;
     private final int HAN_START = 0xAC00;
@@ -147,18 +147,15 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 timerText.setText(millisUntilFinished / 1000 + " sec");
-                timerGauge.setProgress((int)millisUntilFinished / 1000);
 
                 startTime = System.currentTimeMillis();
                 cpm = correctCount / ((double)(startTime - activityStartTime) / 1000 / 60);
                 cpmText.setText("cpm: " + (int) cpm);
-                cpmGauge.setProgress((int)cpm);
 
                 if(typeCount > 0)
                     accuracy = 100.0 - 100.0 * ((double)(diffWordCount + sumDiffCount) /  (sumCount + typeCount));
 
                 accuracyText.setText("accuracy: " + Math.round(accuracy * 10) / 10);
-                accuracyGauge.setProgress((int)accuracy);
             }
 
             @Override
@@ -186,9 +183,7 @@ public class SentenceKoreanTypingActivity extends AppCompatActivity {
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(typingText,0);
             }
-        }, 200);
-
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }, 100);
 
         typingText.addTextChangedListener(new TextWatcher() {
 

@@ -50,7 +50,7 @@ public class EnglishTypingActivity extends AppCompatActivity {
     private CountDownTimer countDownTimer;
     private boolean isBack = false;
     private double cpm = 0;
-    private double accuracy = 100;
+    private double accuracy = 0;
     private int typeCount = 0;
     private int correctCount = 0;
     private int diffWordCount = 0;

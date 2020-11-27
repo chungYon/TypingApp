@@ -16,7 +16,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SentenceKoreanTypingActivity" android:windowSoftInputMode="stateVisible" android:theme="@style/AppTheme" android:screenOrientation="unspecified"/>
+        <activity android:name=".SentenceKoreanTypingActivity" android:windowSoftInputMode="stateVisible" android:theme="@style/AppTheme" android:screenOrientation="landscape"/>
         <activity android:name=".KoreanTypingActivity" android:windowSoftInputMode="stateVisible" android:theme="@style/AppTheme"/>
         <activity android:name=".EnglishTypingActivity" android:windowSoftInputMode="stateVisible" android:theme="@style/AppTheme"/>
         <activity android:name=".MainActivity" android:screenOrientation="portrait"/>

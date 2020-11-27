@@ -62,7 +62,7 @@ public class KoreanTypingActivity extends AppCompatActivity {
     private long startTime = 0;
     private long activityStartTime = 0;
     private final int END_MILLI = 30 * 1000;
-    private final int INTERVAL = 1000;
+    private final int INTERVAL = 100;
     private final int TEXT_COUNT = 37876;
     private final int HAN_END = 0xD7AF;
     private final int HAN_START = 0xAC00;
